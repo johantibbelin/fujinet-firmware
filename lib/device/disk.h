@@ -68,6 +68,11 @@ enum disk_access_flags_t {
 #define DISK_DEVICE H89Disk
 #endif
 
+#ifdef BUILD_ATARI16BIT
+# include "acsi/disk.h"
+# define DEVICE_TYPE ACSIDisk
+#endif 
+
 #ifdef BUILD_COCO
 #include "drivewire/disk.h"
 #define DISK_DEVICE drivewireDisk
