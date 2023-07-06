@@ -46,6 +46,10 @@ static_assert(sizeof(NDeviceStatus) == 4, "NDeviceStatus must be 4 bytes");
 # include "h89/network.h"
 #endif
 
+#ifdef BUILD_ATARI16BIT
+# include "acsi/network.h"
+#endif
+
 #ifdef BUILD_COCO
 # include "drivewire/network.h"
 #endif
