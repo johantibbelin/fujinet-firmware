@@ -61,3 +61,4 @@ fujinet_releases/*
 
 # espressif managed components
 managed_components
+pico/atari16bit/dummy.c
