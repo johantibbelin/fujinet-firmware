@@ -29,22 +29,20 @@ protected:
     uint16_t _media_sector_size = DISK_BYTES_PER_SECTOR_SINGLE;
 
 public:
-    struct CPM_DPB {
-        uint16_t spt;  // ;Number of 128-byte records per track
-        uint8_t bsh;   // ;Block shift. 3 => 1k, 4 => 2k, 5 => 4k....
-        uint8_t blm;   // ;Block mask. 7 => 1k, 0Fh => 2k, 1Fh => 4k...
-        uint8_t exm;   // ;Extent mask, see later
-        uint16_t dsm;  // ;(no. of blocks on the disc)-1
-        uint16_t drm;  // ;(no. of directory entries)-1
-        uint8_t al0;   // ;Directory allocation bitmap, first byte
-        uint8_t al1;   // ;Directory allocation bitmap, second byte
-        uint16_t cks;  // ;Checksum vector size, 0 or 8000h for a fixed disc.
-        uint16_t off;  // ;Offset, number of reserved tracks
+    typedef struct intelw_t {
+        uint8_t low_byte;
+        uint8_t high_byte;
+    };
 
-        uint8_t psh;   // ;Physical sector shift, 0 => 128-byte sectors
-                       // ;1 => 256-byte sectors  2 => 512-byte sectors...
-        uint8_t phm;   // ;Physical sector mask,  0 => 128-byte sectors
-                       // ;1 => 256-byte sectors, 3 => 512-byte sectors...
+    struct GEMDOS_BPB {
+        intelw_t pbs; //Bytes per sector (always 512)
+        intelw_t cpc; //sectors per cluster
+        intelw_t csb; //Cluster size in bytes
+        intelw_t lsec; // Lib size in bytes
+        intelw_t fsc; // FAT size in sectors
+        intelw_t sssf; // Start sector secodn fat
+        uint16_t noc; // Number of clusters
+        uint16_t flags; // Flags bit0 - 0 12 bit FAT - 1 16 bit FAT
     };
 
     struct DiskImageDetails {
