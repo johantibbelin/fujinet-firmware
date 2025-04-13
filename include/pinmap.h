@@ -36,5 +36,6 @@
 #endif
 
 #include "pinmap/atari16bit_rev0.h"
+#include "pinmap/atari16bit_rev00.h"
 #endif // ESP_PLATFORM
 #endif /* PINMAP_H */
