@@ -29,7 +29,7 @@ protected:
     uint16_t _media_sector_size = DISK_BYTES_PER_SECTOR_SINGLE;
 
 public:
-    typedef struct intelw_t {
+    struct intelw_t {
         uint8_t low_byte;
         uint8_t high_byte;
     };
