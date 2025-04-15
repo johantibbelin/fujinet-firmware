@@ -20,12 +20,12 @@ class MediaTypeST: public MediaType
 private:
     uint32_t _sector_to_offset(uint16_t sectorNum);
 
-public:
+/*public:
     struct CpmDiskImageDetails {
         std::string file_extension;
         uint32_t media_size;
         CPM_DPB dpb;
-    };
+    };*/
 
 public:
     virtual bool read(uint16_t sectornum, uint16_t *readcount) override;
