@@ -2,12 +2,12 @@
 #ifdef PINMAP_ATARI16BIT_REV00
 
 /* SD Card - fnFsSD.cpp */
-#define PIN_CARD_DETECT -1 // fnSystem.h
-#define PIN_CARD_DETECT_FIX -1 // fnSystem.h
-#define PIN_SD_HOST_CS GPIO_NUM_5 //fnFsSD.cpp
-#define PIN_SD_HOST_MISO GPIO_NUM_19
-#define PIN_SD_HOST_MOSI GPIO_NUM_23
-#define PIN_SD_HOST_SCK GPIO_NUM_18
+#define PIN_CARD_DETECT (gpio_num_t)-1 // fnSystem.h
+#define PIN_CARD_DETECT_FIX (gpio_num_t)-1 // fnSystem.h
+#define PIN_SD_HOST_CS GPIO_NUM_10 //fnFsSD.cpp
+#define PIN_SD_HOST_MISO GPIO_NUM_13
+#define PIN_SD_HOST_MOSI GPIO_NUM_11
+#define PIN_SD_HOST_SCK GPIO_NUM_12
 
 /* UART - fnuart.cpp */
 #define PIN_UART0_RX 3  // USB Serial
@@ -28,7 +28,8 @@
 #define PIN_LED_BT      -1 // No BT LED
 
 /* Audio Output - samlib.h */
-#define PIN_DAC1 -1 // not connected
+
+#define PIN_DAC1 (gpio_num_t)-1 // not connected
 
 /* ACSI SPI Pins */
 /*#define PIN_ACSI_SPI_CS GPIO_NUM_15
