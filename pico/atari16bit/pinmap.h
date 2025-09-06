@@ -11,7 +11,11 @@
 #define ACSI_D7 15
 
 /* Control pins*/
+#ifndef ATARI16BIT_REV00
 #define ACSI_D_DIR 7 /* DIR pin on 74LS641-1 */
+#else
+#define ACSI_BUS_DIR 7
+#endif
 
 #define ACSI_CS 2
 #define ACSI_IRQ 6
