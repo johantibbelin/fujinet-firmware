@@ -73,7 +73,7 @@ typedef enum class TRANS_STATE {
 
 #ifdef BUILD_ATARI16BIT
 #include "acsi/acsi.h"
-#define SYSTEM_BUS ACSI
+#define FN_BUS_PORT fnUartBUS
 #endif
 
 #ifdef BUILD_COCO

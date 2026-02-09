@@ -182,7 +182,7 @@ private:
     long answerTimer;
     bool answered=false;
 
-    void process(uint32_t commanddata, uint8_t checksum) override;
+    void acsi_process(uint32_t commanddata, uint8_t checksum) override;
     
     void crx_toggle(bool toggle);                // CRX active/inactive?
 

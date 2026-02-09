@@ -7,7 +7,7 @@
 
 #include "../../include/debug.h"
 #include "driver/spi_slave.h"
-
+#include "acsi/acsiFuji.h"
 
 #include "fnConfig.h"
 #include "fnSystem.h"
@@ -16,7 +16,7 @@
 #include "modem.h" 
 
 // Calculate 8-bit checksum
-uint8_t acsi_checksum(uint8_t *buf, unsigned short len)
+uint8_t virtualDevice::acsi_checksum(uint8_t *buf, unsigned short len)
 {
     unsigned int chk = 0;
 
@@ -102,31 +102,30 @@ uint8_t virtualDevice::bus_to_peripheral(uint8_t *buf, unsigned short len)
     return 0;
 }
 
-void virtualDevice::process(uint32_t commanddata, uint8_t checksum)
+void virtualDevice::acsi_process(uint32_t commanddata, uint8_t checksum)
 {
-    cmdFrame.commanddata = commanddata;
-    cmdFrame.checksum = checksum;
+    
 
 
-    fnUartDebug.printf("process() not implemented yet for this device. Cmd received: %02x\n", cmdFrame.comnd);
+    Debug_printf("process() not implemented yet for this device. Cmd received: %02x\n", cmdFrame.comnd);
 }
-systemBus virtualDevice::acsi_get_bus() { return ACSI; }
+systemBus virtualDevice::acsi_get_bus() { return SYSTEM_BUS; }
 
 void systemBus::service()
 {
     uint8_t buf[32];
     // Listen to the bus, and react here.
-    if (fnUartBUS.available())
+    /*if (fnUartBUS.available())
     {
         int c=fnUartBUS.read();
         if (c==0) return;
         else if (c == 'C') // acsi command follows
        {
-        fnUartBUS.readBytes(buf,6);
+        //fnUartBUS.readBytes(buf,6);
         Debug_println("ACSI command recieved.");
  
         }
-    }
+    }*/
 }
 
 void virtualDevice::acsi_error()
@@ -151,12 +150,12 @@ void systemBus::setup()
  
     fnSystem.set_pin_mode(PIN_UART1_RX, gpio_mode_t::GPIO_MODE_INPUT); // There's no PULLUP/PULLDOWN on pins 34-39
     fnSystem.set_pin_mode(PIN_UART1_TX, gpio_mode_t::GPIO_MODE_OUTPUT); // There's no PULLUP/PULLDOWN on pins 34-39
-
-
-    fnUartBUS.begin(ACSI_BAUDRATE);
+    
+    
+   // fnUartBUS.begin(ACSI_BAUDRATE);
  
 
-    fnUartBUS.flush();
+    //fnUartBUS.flush();
     
    
  }
@@ -248,5 +247,5 @@ bool systemBus::enabledDeviceStatus(uint8_t device_id)
     return false;
 }
 
-systemBus ACSI;
+extern systemBus SYSTEM_BUS;
 #endif /* ACSI */

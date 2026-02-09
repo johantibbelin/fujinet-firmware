@@ -96,7 +96,7 @@ bool MediaTypeST::write(uint16_t sectornum, bool verify)
     }
 
     int ret = fflush(_media_fileh);    // This doesn't seem to be connected to anything in ESP-IDF VF, so it may not do anything
-    ret = fsync(fileno(_media_fileh)); // Since we might get reset at any moment, go ahead and sync the file (not clear if fflush does this)
+    //ret = fsync(fileno(_media_fileh)); // Since we might get reset at any moment, go ahead and sync the file (not clear if fflush does this)
     Debug_printf("IMG::write fsync:%d\n", ret);
 
     _media_last_sector = sectornum;

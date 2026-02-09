@@ -49,29 +49,25 @@ void MediaType::unmount()
     }
 }
 
-mediatype_t MediaType::discover_mediatype(const char *filename, uint32_t disksize)
+mediatype_t MediaType::discover_mediatype(const char *filename)
 {
-    // TODO: iterate through supported images matching ext and filesize
+    // TODO: fix ST image
 
     int l = strlen(filename);
     if (l > 4 && filename[l - 4] == '.')
     {
+        // Check the last 3 characters of the string
         const char *ext = filename + l - 3;
-
-        auto it = std::find_if(
-                supported_images.begin(),
-                supported_images.end(),
-                [ext, disksize](const DiskImageDetails& img) {
-                    return (strcasecmp(ext, img.file_extension.c_str()) == 0)
-                            && (img.media_size == disksize);
-                }
-        );
-
-        if (it != supported_images.end()) {
-            return (*it).media_type;
+        if (strcasecmp(ext, "IMG") == 0)
+        {
+            return MEDIATYPE_IMG;
         }
-    }
+        else if (strcasecmp(ext, "ST ") == 0)
+        {
+            return MEDIATYPE_ST;
+        }
 
+    }
     return MEDIATYPE_UNKNOWN;
 }
 
