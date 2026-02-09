@@ -1,3 +1,4 @@
+#if 0
 #ifndef FUJI_H
 #define FUJI_H
 
@@ -8,7 +9,7 @@
 
 #include "fujiHost.h"
 #include "fujiDisk.h"
-#include "fujiCmd.h"
+//#include "fujiCmd.h"
 
 #define MAX_HOSTS 8
 #define MAX_DISK_DEVICES 8
@@ -157,3 +158,4 @@ public:
 extern ACSIFuji theFuji;
 
 #endif // FUJI_H
+#endif //0

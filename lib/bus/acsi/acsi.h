@@ -10,7 +10,8 @@
 #include <vector>
 
 #include <map>
-
+#include "UARTChannel.h"
+#include "fujiDeviceID.h"
 /**
  * ACSI Commands (AHDI)
 */
@@ -164,7 +165,7 @@ class virtualDevice
 {
 protected:
     friend systemBus; // We exist on the ACSI Bus, and need its methods.
-
+    uint8_t acsi_checksum(uint8_t *buf, unsigned short len);
     void bus_to_computer(uint8_t *buf, uint16_t len, bool err);
 
     uint8_t bus_to_peripheral(uint8_t *buf, unsigned short len);
@@ -185,12 +186,12 @@ protected:
      * @brief All ACSI devices repeatedly call this routine to fan out to other methods for each command. 
      * This is typcially implemented as a switch() statement.
      */
-    virtual void process(uint32_t commanddata, uint8_t checksum) = 0;
+    virtual void acsi_process(uint32_t commanddata, uint8_t checksum) = 0;
     
     /**
      * @brief send current status of device
      */
-    virtual void status() {};
+    virtual void acsi_status() {};
 
 
 
@@ -206,6 +207,11 @@ protected:
     void acsi_complete();
 
 public:
+
+    /**
+     * @brief Is this virtualDevice holding the virtual disk drive used to boot CONFIG?
+     */
+    bool is_config_device = false;
 
     /**
      * @brief is device active (turned on?)
@@ -252,6 +258,6 @@ public:
    ACSIModem *get_modem() { return _modemDev; }
 };
 
-extern systemBus ACSI;
+extern systemBus SYSTEM_BUS;
 
 #endif /* ACSI_H */

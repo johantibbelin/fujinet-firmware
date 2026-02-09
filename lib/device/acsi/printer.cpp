@@ -54,7 +54,7 @@ ACSIPrinter::printer_type ACSIPrinter::match_modelname(std::string model_name)
     return (printer_type)i;
 }
 
-void ACSIPrinter::process(uint32_t commanddata, uint8_t checksum)
+void ACSIPrinter::acsi_process(uint32_t commanddata, uint8_t checksum)
 {
     // cmdFrame.commanddata = commanddata;
     // cmdFrame.checksum = checksum;

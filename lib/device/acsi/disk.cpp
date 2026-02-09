@@ -1,12 +1,12 @@
 #ifdef BUILD_ATARI16BIT
 
-#include "disk.h"
+#include "../disk.h"
 
 #include <memory.h>
 #include <string.h>
 
 #include "../../include/debug.h"
-
+#include "acsiFuji.h"
 #include "media.h"
 #include "utils.h"
 
@@ -19,7 +19,7 @@ ACSIDisk::~ACSIDisk()
 {
 }
 
-mediatype_t ACSIDisk::mount(FILE *f, const char *filename, uint32_t disksize, mediatype_t disk_type)
+mediatype_t ACSIDisk::mount(FILE *f, const char *filename, uint32_t disksize, disk_access_flags_t mflags,mediatype_t disk_type)
 {
     mediatype_t mt = MEDIATYPE_UNKNOWN;
 
@@ -34,7 +34,7 @@ mediatype_t ACSIDisk::mount(FILE *f, const char *filename, uint32_t disksize, me
 
     // Determine MediaType based on filename extension
     if (disk_type == MEDIATYPE_UNKNOWN && filename != nullptr)
-        disk_type = MediaType::discover_mediatype(filename, disksize);
+        disk_type = MediaType::discover_mediatype(filename);
 
     if (disk_type != MEDIATYPE_UNKNOWN) {
         _media = new MediaTypeIMG();
@@ -59,7 +59,7 @@ void ACSIDisk::unmount()
     }
 }
 
-void ACSIDisk::process(uint32_t commanddata, uint8_t checksum)
+void ACSIDisk::acsi_process(uint32_t commanddata, uint8_t checksum)
 {
 }
 

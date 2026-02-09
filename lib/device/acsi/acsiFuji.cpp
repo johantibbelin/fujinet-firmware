@@ -1,0 +1,289 @@
+#ifdef BUILD_ATARI16BIT
+#include "acsiFuji.h"
+#include "network.h"
+#include "../bus/acsi/acsi.h"
+#include "fnSystem.h"
+#include "fnConfig.h"
+#include "fsFlash.h"
+#include "fnWiFi.h"
+#include "utils.h"
+#include "compat_string.h"
+#include "fuji_endian.h"
+
+#define IMAGE_EXTENSION ".st"
+
+#ifndef ESP_PLATFORM // why ESP does not like it? it throws a linker error undefined reference to 'basename'
+#include <libgen.h>
+#endif /* ESP_PLATFORM */
+
+#ifndef ESP_PLATFORM // why ESP does not like it? it throws a linker error undefined reference to 'basename'
+#include <libgen.h>
+#endif /* ESP_PLATFORM */
+
+acsiFuji platformFuji;
+fujiDevice *theFuji = &platformFuji;
+ACSINetwork rs232NetDevs[MAX_NETWORK_DEVICES];
+
+acsiFuji::acsiFuji() : fujiDevice(MAX_DISK_DEVICES, IMAGE_EXTENSION, std::nullopt)
+{}
+
+// Initializes base settings and adds our devices to the RS232 bus
+void acsiFuji::setup()
+{
+    // set up Fuji device
+
+    populate_slots_from_config();
+
+    insert_boot_device(Config.get_general_boot_mode(), MEDIATYPE_UNKNOWN, &bootdisk);
+
+    // Disable booting from CONFIG if our settings say to turn it off
+    boot_config = Config.get_general_config_enabled();
+
+    // Add our devices to the RS232 bus
+    for (int i = 0; i < MAX_DISK_DEVICES; i++)
+        SYSTEM_BUS.addDevice(&_fnDisks[i].disk_dev,
+                             static_cast<fujiDeviceID_t>(FUJI_DEVICEID_DISK + i));
+
+    for (int i = 0; i < MAX_NETWORK_DEVICES; i++)
+        SYSTEM_BUS.addDevice(&rs232NetDevs[i],
+                             static_cast<fujiDeviceID_t>(FUJI_DEVICEID_NETWORK + i));
+}
+
+// Status
+void acsiFuji::acsi_status()
+{
+   fujicmd_status();
+    return;
+}
+
+// Set SSID
+void acsiFuji::rs232_net_set_ssid(bool save) // was aux1
+{
+    SSIDConfig cfg;
+    transaction_continue(false);
+    if (!transaction_get((uint8_t *)&cfg, sizeof(cfg)))
+        transaction_error();
+    else
+        fujicmd_net_set_ssid_success(cfg.ssid, cfg.password, save);
+}
+
+// Do RS232 copy
+void acsiFuji::rs232_copy_file()
+{
+    char csBuf[256];
+
+    transaction_continue(true);
+    if (!transaction_get(csBuf, sizeof(csBuf)))
+    {
+        transaction_error();
+        return;
+    }
+
+    fujicmd_copy_file_success(cmdFrame.aux1, cmdFrame.aux2, csBuf);
+}
+
+//  Make new disk and shove into device slot
+void acsiFuji::rs232_new_disk()
+{
+    transaction_continue(true);
+    Debug_println("Fuji cmd: NEW DISK");
+
+    struct
+    {
+        unsigned short numSectors;
+        unsigned short sectorSize;
+        unsigned char hostSlot;
+        unsigned char deviceSlot;
+        char filename[MAX_FILENAME_LEN]; // WIll set this to MAX_FILENAME_LEN, later.
+    } newDisk;
+
+    // Ask for details on the new disk to create
+    if (!transaction_get((uint8_t *)&newDisk, sizeof(newDisk)))
+    {
+        Debug_print("rs232_new_disk Bad checksum\n");
+        transaction_error();
+        return;
+    }
+    if (newDisk.deviceSlot >= MAX_DISK_DEVICES || newDisk.hostSlot >= MAX_HOSTS)
+    {
+        Debug_print("rs232_new_disk Bad disk or host slot parameter\n");
+        transaction_error();
+        return;
+    }
+    // A couple of reference variables to make things much easier to read...
+    fujiDisk &disk = _fnDisks[newDisk.deviceSlot];
+    fujiHost &host = _fnHosts[newDisk.hostSlot];
+
+    disk.host_slot = newDisk.hostSlot;
+    disk.access_mode = DISK_ACCESS_MODE_WRITE;
+    strlcpy(disk.filename, newDisk.filename, sizeof(disk.filename));
+
+    if (host.file_exists(disk.filename))
+    {
+        Debug_printf("rs232_new_disk File exists: \"%s\"\n", disk.filename);
+        transaction_error();
+        return;
+    }
+
+    disk.fileh = host.fnfile_open(disk.filename, disk.filename, sizeof(disk.filename), "w");
+    if (disk.fileh == nullptr)
+    {
+        Debug_printf("rs232_new_disk Couldn't open file for writing: \"%s\"\n", disk.filename);
+        transaction_error();
+        return;
+    }
+
+    //bool ok = disk.disk_dev.write_blank(disk.fileh, newDisk.sectorSize, newDisk.numSectors);
+    bool ok = false; //temporary
+    fnio::fclose(disk.fileh);
+
+    if (ok == false)
+    {
+        Debug_print("rs232_new_disk Data write failed\n");
+        transaction_error();
+        return;
+    }
+
+    Debug_print("rs232_new_disk succeeded\n");
+    transaction_complete();
+}
+
+void acsiFuji::rs232_test()
+{
+    uint8_t buf[512];
+
+    transaction_continue(false);
+    Debug_printf("rs232_test()\n");
+    memset(buf, 'A', 512);
+    transaction_put(buf, 512, false);
+}
+
+size_t acsiFuji::set_additional_direntry_details(fsdir_entry_t *f, uint8_t *dest, uint8_t maxlen)
+{
+    return _set_additional_direntry_details(f, dest, maxlen, 70, SIZE_16_LE,
+                                            HAS_DIR_ENTRY_FLAGS_COMBINED, HAS_DIR_ENTRY_TYPE);
+}
+
+void acsiFuji::acsi_process(uint32_t commanddata, uint8_t checksum)
+{
+    Debug_println("acsiFuji::rs232_process() called");
+
+    //cmdFrame = *cmd_ptr;
+    switch (cmdFrame.comnd)
+    {
+    case FUJICMD_STATUS:
+        //acsi_status();
+        break;
+    case FUJICMD_RESET:
+        fujicmd_reset();
+        break;
+    case FUJICMD_SCAN_NETWORKS:
+        fujicmd_net_scan_networks();
+        break;
+    case FUJICMD_GET_SCAN_RESULT:
+        fujicmd_net_scan_result(cmdFrame.aux1);
+        break;
+    case FUJICMD_SET_SSID:
+        rs232_net_set_ssid(cmdFrame.aux1);
+        break;
+    case FUJICMD_GET_SSID:
+        fujicmd_net_get_ssid();
+        break;
+    case FUJICMD_GET_WIFISTATUS:
+        fujicmd_net_get_wifi_status();
+        break;
+    case FUJICMD_MOUNT_HOST:
+        fujicmd_mount_host_success(cmdFrame.aux1);
+        break;
+    case FUJICMD_MOUNT_IMAGE:
+        fujicmd_mount_disk_image_success(cmdFrame.aux1, (disk_access_flags_t) cmdFrame.aux2);
+        break;
+    case FUJICMD_OPEN_DIRECTORY:
+        fujicmd_open_directory_success(cmdFrame.aux1);
+        break;
+    case FUJICMD_READ_DIR_ENTRY:
+        fujicmd_read_directory_entry(cmdFrame.aux1, cmdFrame.aux2);
+        break;
+    case FUJICMD_CLOSE_DIRECTORY:
+        fujicmd_close_directory();
+        break;
+    case FUJICMD_GET_DIRECTORY_POSITION:
+        fujicmd_get_directory_position();
+        break;
+    case FUJICMD_SET_DIRECTORY_POSITION:
+        fujicmd_set_directory_position(cmdFrame.aux1);
+        break;
+    case FUJICMD_READ_HOST_SLOTS:
+        fujicmd_read_host_slots();
+        break;
+    case FUJICMD_WRITE_HOST_SLOTS:
+        fujicmd_write_host_slots();
+        break;
+    case FUJICMD_READ_DEVICE_SLOTS:
+        fujicmd_read_device_slots();
+        break;
+    case FUJICMD_WRITE_DEVICE_SLOTS:
+        fujicmd_write_device_slots();
+        break;
+    case FUJICMD_GET_WIFI_ENABLED:
+        fujicmd_net_get_wifi_enabled();
+        break;
+    case FUJICMD_UNMOUNT_IMAGE:
+        fujicmd_unmount_disk_image_success(cmdFrame.aux1);
+        break;
+    case FUJICMD_GET_ADAPTERCONFIG:
+        fujicmd_get_adapter_config();
+        break;
+    case FUJICMD_GET_ADAPTERCONFIG_EXTENDED:
+        fujicmd_get_adapter_config_extended();
+        break;
+    case FUJICMD_NEW_DISK:
+        rs232_new_disk();
+        break;
+    case FUJICMD_SET_DEVICE_FULLPATH:
+        //fujicmd_set_device_filename_success(cmdFrame.aux1, cmdFrame.aux2,
+        //                                    (disk_access_flags_t) cmdFrame.aux3);
+        break;
+    case FUJICMD_SET_HOST_PREFIX:
+        fujicmd_set_host_prefix(cmdFrame.aux1);
+        break;
+    case FUJICMD_GET_HOST_PREFIX:
+        fujicmd_get_host_prefix(cmdFrame.aux1);
+        break;
+    case FUJICMD_WRITE_APPKEY:
+        fujicmd_write_app_key(cmdFrame.aux1);
+        break;
+    case FUJICMD_READ_APPKEY:
+        fujicmd_read_app_key();
+        break;
+    case FUJICMD_OPEN_APPKEY:
+        fujicmd_open_app_key();
+        break;
+    case FUJICMD_CLOSE_APPKEY:
+        fujicmd_close_app_key();
+        break;
+    case FUJICMD_GET_DEVICE_FULLPATH:
+        fujicmd_get_device_filename(cmdFrame.aux1);
+        break;
+    case FUJICMD_CONFIG_BOOT:
+        fujicmd_set_boot_config(cmdFrame.aux1);
+        break;
+    case FUJICMD_COPY_FILE:
+        rs232_copy_file();
+        break;
+    case FUJICMD_MOUNT_ALL:
+        fujicmd_mount_all_success();
+        break;
+    case FUJICMD_SET_BOOT_MODE:
+        fujicmd_set_boot_mode(cmdFrame.aux1, MEDIATYPE_UNKNOWN, &bootdisk);
+        break;
+    case FUJICMD_DEVICE_READY:
+        Debug_printf("FUJICMD DEVICE TEST\n");
+        rs232_test();
+        break;
+    default:
+        transaction_error();
+    }
+}
+
+#endif /* BUILD_ATARI16BIT */
