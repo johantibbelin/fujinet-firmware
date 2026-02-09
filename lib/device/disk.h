@@ -70,7 +70,7 @@ enum disk_access_flags_t {
 
 #ifdef BUILD_ATARI16BIT
 # include "acsi/disk.h"
-# define DEVICE_TYPE ACSIDisk
+# define DISK_DEVICE ACSIDisk
 #endif 
 
 #ifdef BUILD_COCO

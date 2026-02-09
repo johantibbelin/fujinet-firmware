@@ -3,7 +3,7 @@
 
 #include "bus.h"
 #include "media.h"
-
+#include "../disk.h"
 #define STATUS_OK        0
 #define STATUS_BAD_BLOCK 1
 #define STATUS_NO_BLOCK  2
@@ -14,12 +14,12 @@ class ACSIDisk : public virtualDevice
 {
 private:
     MediaType *_media = nullptr;
-    void process(uint32_t commanddata, uint8_t checksum) override;
+    void acsi_process(uint32_t commanddata, uint8_t checksum) override;
 
 public:
     ACSIDisk();
 
-    mediatype_t mount(FILE *f, const char *filename, uint32_t disksize, mediatype_t disk_type = MEDIATYPE_UNKNOWN);
+    mediatype_t mount(FILE *f, const char *filename, uint32_t disksize, disk_access_flags_t mflags, mediatype_t disk_type = MEDIATYPE_UNKNOWN);
     void unmount();
 
     bool device_active = false;

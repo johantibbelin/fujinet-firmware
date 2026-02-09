@@ -288,7 +288,7 @@ bool ACSINetwork::status_channel_json(NetworkStatus *ns)
 {
     ns->connected = json_bytes_remaining > 0;
     ns->error = json_bytes_remaining > 0 ? 1 : 136;
-    ns->rxBytesWaiting = json_bytes_remaining;
+    //ns->rxBytesWaiting = json_bytes_remaining;
     return false; // for now
 }
 
@@ -535,7 +535,7 @@ void ACSINetwork::set_password()
  * @param comanddata incoming 4 bytes containing command and aux bytes
  * @param checksum 8 bit checksum
  */
-void ACSINetwork::process(uint32_t commanddata, uint8_t checksum)
+void ACSINetwork::acsi_process(uint32_t commanddata, uint8_t checksum)
 {
     cmdFrame.commanddata = commanddata;
     cmdFrame.checksum = checksum;

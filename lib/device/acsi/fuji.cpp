@@ -1,3 +1,4 @@
+#if 0
 #ifdef BUILD_ATARI16BIT
 
 #include "fuji.h"
@@ -598,3 +599,4 @@ std::string ACSIFuji::get_host_prefix(int host_slot)
 }
 
 #endif /* NEW_TARGET */
+#endif // 0

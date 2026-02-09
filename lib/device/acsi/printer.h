@@ -26,7 +26,7 @@ protected:
 
     uint8_t _buffer[TX_BUF_SIZE];
     
-    void process(uint32_t commanddata, uint8_t checksum) override;
+    void acsi_process(uint32_t commanddata, uint8_t checksum) override;
     void shutdown() override;
 
     printer_emu *_pptr = nullptr;
