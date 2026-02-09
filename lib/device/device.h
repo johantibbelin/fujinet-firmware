@@ -157,7 +157,7 @@ lynxUDPStream *udpDev;
 # include "acsi/modem.h"
 # include "acsi/printer.h"
 # include "acsi/printerlist.h"
-# include "acsi/fuji.h"
+# include "acsi/acsiFuji.h"
     ACSIModem *sioR;
 #endif
 

@@ -8,7 +8,7 @@
 
 #include "fnSystem.h"
 #include "fnConfig.h"
-#include "fnUART.h"
+//#include "fnUART.h"
 #include "fnWiFi.h"
 
 #include "utils.h"
@@ -454,7 +454,7 @@ void ACSIModem::at_handle_answer()
     Debug_printf("HANDLE ANSWER !!!\n");
     if (tcpServer.hasClient())
     {
-        tcpClient = tcpServer.available();
+        //tcpClient = tcpServer.available();
         tcpClient.setNoDelay(true); // try to disable naggle
                                     //        tcpServer.stop();
         answerTimer = fnSystem.millis();
@@ -462,7 +462,7 @@ void ACSIModem::at_handle_answer()
         CRX = true;
 
         cmdMode = false;
-        fnUartBUS.flush();
+        //fnUartBUS.flush();
         answerHack = false;
     }
 }
@@ -1219,12 +1219,12 @@ void ACSIModem::shutdown()
 /*
   Process command
 */
-void ACSIModem::process(uint32_t commanddata, uint8_t checksum)
+void ACSIModem::acsi_process(uint32_t commanddata, uint8_t checksum)
 {
     cmdFrame.commanddata = commanddata;
     cmdFrame.checksum = checksum;
 
-    fnUartDebug.printf("H89_process() not implemented yet for this device. Cmd received: %02x\n", cmdFrame.comnd);
+    Debug_printf("H89_process() not implemented yet for this device. Cmd received: %02x\n", cmdFrame.comnd);
 }
 
 #endif /* ACSI Modem */
