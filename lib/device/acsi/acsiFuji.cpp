@@ -57,7 +57,7 @@ void acsiFuji::acsi_status()
 }
 
 // Set SSID
-void acsiFuji::rs232_net_set_ssid(bool save) // was aux1
+void acsiFuji::acsi_net_set_ssid(bool save) // was aux1
 {
     SSIDConfig cfg;
     transaction_continue(false);
@@ -68,7 +68,7 @@ void acsiFuji::rs232_net_set_ssid(bool save) // was aux1
 }
 
 // Do RS232 copy
-void acsiFuji::rs232_copy_file()
+void acsiFuji::acsi_copy_file()
 {
     char csBuf[256];
 
@@ -83,7 +83,7 @@ void acsiFuji::rs232_copy_file()
 }
 
 //  Make new disk and shove into device slot
-void acsiFuji::rs232_new_disk()
+void acsiFuji::acsi_new_disk()
 {
     transaction_continue(true);
     Debug_println("Fuji cmd: NEW DISK");
@@ -148,12 +148,12 @@ void acsiFuji::rs232_new_disk()
     transaction_complete();
 }
 
-void acsiFuji::rs232_test()
+void acsiFuji::acsi_test()
 {
     uint8_t buf[512];
 
     transaction_continue(false);
-    Debug_printf("rs232_test()\n");
+    Debug_printf("acsi_test()\n");
     memset(buf, 'A', 512);
     transaction_put(buf, 512, false);
 }
@@ -205,7 +205,7 @@ void acsiFuji::acsi_process(uint32_t commanddata, uint8_t checksum)
         fujicmd_net_scan_result(cmdFrame.aux1);
         break;
     case FUJICMD_SET_SSID:
-        rs232_net_set_ssid(cmdFrame.aux1);
+        acsi_net_set_ssid(cmdFrame.aux1);
         break;
     case FUJICMD_GET_SSID:
         fujicmd_net_get_ssid();
@@ -259,7 +259,7 @@ void acsiFuji::acsi_process(uint32_t commanddata, uint8_t checksum)
         fujicmd_get_adapter_config_extended();
         break;
     case FUJICMD_NEW_DISK:
-        rs232_new_disk();
+        acsi_new_disk();
         break;
     case FUJICMD_SET_DEVICE_FULLPATH:
         //fujicmd_set_device_filename_success(cmdFrame.aux1, cmdFrame.aux2,
@@ -290,7 +290,7 @@ void acsiFuji::acsi_process(uint32_t commanddata, uint8_t checksum)
         fujicmd_set_boot_config(cmdFrame.aux1);
         break;
     case FUJICMD_COPY_FILE:
-        rs232_copy_file();
+        acsi_copy_file();
         break;
     case FUJICMD_MOUNT_ALL:
         fujicmd_mount_all_success();
@@ -300,7 +300,7 @@ void acsiFuji::acsi_process(uint32_t commanddata, uint8_t checksum)
         break;
     case FUJICMD_DEVICE_READY:
         Debug_printf("FUJICMD DEVICE TEST\n");
-        rs232_test();
+        acsi_test();
         break;
     default:
         transaction_error();

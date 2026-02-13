@@ -45,11 +45,10 @@ protected:
     size_t set_additional_direntry_details(fsdir_entry_t *f, uint8_t *dest,
                                            uint8_t maxlen) override;
 
-    void rs232_net_set_ssid(bool save);    // 0xFB
-    void rs232_new_disk();                 // 0xE7
-    void rs232_copy_file();                // 0xD8
-    void rs232_test();                     // 0x00
-
+    void acsi_new_disk();                 // 0xE7
+    void acsi_copy_file();                // 0xD8
+    void acsi_test();                     // 0x00
+    void acsi_net_set_ssid(bool save);     // 0xFB
 public:
     acsiFuji();
     void setup() override;
