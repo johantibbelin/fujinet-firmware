@@ -185,9 +185,9 @@ bool ACSINetwork::read_channel_json(unsigned short num_bytes)
  * @param num_bytes - number of bytes to read from channel.
  * @return TRUE on error, FALSE on success. Passed directly to bus_to_computer().
  */
-bool ACSINetwork::read_channel(unsigned short num_bytes)
+protocolError_t ACSINetwork::read_channel(unsigned short num_bytes)
 {
-    bool _err = false;
+    protocolError_t _err = PROTOCOL_ERROR::NONE;
 
     switch (channelMode)
     {
@@ -195,7 +195,7 @@ bool ACSINetwork::read_channel(unsigned short num_bytes)
         _err = protocol->read(num_bytes);
         break;
     case JSON:
-        err = read_channel_json(num_bytes);
+        bool e = read_channel_json(num_bytes); //Fix: Always returns false
         break;
     }
     return _err;
@@ -267,9 +267,9 @@ void ACSINetwork::read()
  * @param num_bytes Number of bytes to write.
  * @return TRUE on error, FALSE on success. Used to emit H89_error or H89_complete().
  */
-bool ACSINetwork::write_channel(unsigned short num_bytes)
+protocolError_t ACSINetwork::write_channel(unsigned short num_bytes)
 {
-    bool err = false;
+    protocolError_t err = PROTOCOL_ERROR::NONE;
 
     switch (channelMode)
     {
@@ -278,7 +278,7 @@ bool ACSINetwork::write_channel(unsigned short num_bytes)
         break;
     case JSON:
         Debug_printf("JSON Not Handled.\n");
-        err = true;
+        err = PROTOCOL_ERROR::UNSPECIFIED;
         break;
     }
     return err;
@@ -286,8 +286,8 @@ bool ACSINetwork::write_channel(unsigned short num_bytes)
 
 bool ACSINetwork::status_channel_json(NetworkStatus *ns)
 {
-    ns->connected = json_bytes_remaining > 0;
-    ns->error = json_bytes_remaining > 0 ? 1 : 136;
+    //ns->connected = json_bytes_remaining > 0;
+    //ns->error = json_bytes_remaining > 0 ? 1 : 136;
     //ns->rxBytesWaiting = json_bytes_remaining;
     return false; // for now
 }
@@ -635,7 +635,7 @@ void ACSINetwork::parse_and_instantiate_protocol(string d)
         Debug_printf("Invalid devicespec: %s\n", deviceSpec.c_str());
         statusByte.byte = 0x00;
         statusByte.bits.client_error = true;
-        err = NETWORK_ERROR_INVALID_DEVICESPEC;
+        err = NDEV_STATUS::INVALID_DEVICESPEC;
         return;
     }
 
@@ -647,7 +647,7 @@ void ACSINetwork::parse_and_instantiate_protocol(string d)
         Debug_printf("Could not open protocol.\n");
         statusByte.byte = 0x00;
         statusByte.bits.client_error = true;
-        err = NETWORK_ERROR_GENERAL;
+        //err = PROTOCOL_ERROR::UNSPECIFIED;
         return;
     }
 }

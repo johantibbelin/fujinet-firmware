@@ -171,7 +171,7 @@ private:
     /**
      * Error number, if status.bits.client_error is set.
      */
-    uint8_t err; 
+    nDevStatus_t err; 
 
     /**
      * ESP timer handle for the Interrupt rate limiting timer
@@ -306,7 +306,7 @@ private:
      * @param num_bytes Number of bytes to read.
      * @return TRUE on error, FALSE on success. Passed directly to bus_to_computer().
      */
-    bool read_channel(unsigned short num_bytes);
+    protocolError_t read_channel(unsigned short num_bytes);
 
 
     /**
@@ -321,7 +321,7 @@ private:
      * @param num_bytes Number of bytes to write.
      * @return TRUE on error, FALSE on success. Used to emit H89net_error or H89net_complete().
      */
-    bool write_channel(unsigned short num_bytes);
+    protocolError_t write_channel(unsigned short num_bytes);
 
     /**
      * @brief perform local status commands, if protocol is not bound, based on cmdFrame
